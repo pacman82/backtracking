@@ -9,8 +9,9 @@ mod backtracking;
 fn main() {
     let solutions = Solutions::new(Position::new(0,0));
     
-    for journey in solutions {
-        println!("{journey}")
+    for (index, journey) in solutions.enumerate() {
+        let num_solution = index + 1;
+        println!("{num_solution}: {journey}")
     }
 }
 
