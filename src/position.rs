@@ -7,11 +7,8 @@ pub struct Position {
 }
 
 impl Position {
-
     pub fn new(row: i8, column: i8) -> Self {
-        Self {
-            row, column
-        }
+        Self { row, column }
     }
 
     /// All possible moves, taking into account the position in the board

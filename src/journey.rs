@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, self};
+use std::fmt::{self, Display, Formatter};
 
 use crate::position::Position;
 
@@ -12,15 +12,14 @@ pub struct Journey {
     /// Number of fields traveled
     num_visited: usize,
     /// Order of moves visited so far. Only meaningful until `num_visited`.
-    moves: [Position; NUM_FIELDS]
+    moves: [Position; NUM_FIELDS],
 }
 
 impl Journey {
-
     pub fn new(start: Position) -> Self {
         Self {
             num_visited: 1,
-            moves: [start; NUM_FIELDS]
+            moves: [start; NUM_FIELDS],
         }
     }
 
