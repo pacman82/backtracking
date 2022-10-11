@@ -11,6 +11,10 @@ impl Position {
         Self { row, column }
     }
 
+    pub fn as_index(self) -> usize {
+        (self.row * 8 + self.column) as usize
+    }
+
     /// All possible moves, taking into account the position in the board
     pub fn possible_moves(&self, possible_moves: &mut Vec<Position>) {
         // Possible Moves of the knight

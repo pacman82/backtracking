@@ -11,20 +11,26 @@ const NUM_FIELDS: usize = ROWS * COLUMNS;
 pub struct Journey {
     /// Number of fields traveled
     num_visited: usize,
+    /// For fast lookup, wether a position has been visited or not.
+    visited: [bool; NUM_FIELDS],
     /// Order of moves visited so far. Only meaningful until `num_visited`.
     moves: [Position; NUM_FIELDS],
 }
 
 impl Journey {
     pub fn new(start: Position) -> Self {
+        let mut visited = [false; NUM_FIELDS];
+        visited[start.as_index()] = true;
         Self {
             num_visited: 1,
+            visited,
             moves: [start; NUM_FIELDS],
         }
     }
 
     pub fn play_move(&mut self, next: Position) {
         self.moves[self.num_visited] = next;
+        self.visited[next.as_index()] = true;
         self.num_visited += 1;
     }
 
@@ -35,7 +41,7 @@ impl Journey {
     pub fn fill_possible_moves(&self, possible_moves: &mut Vec<Position>) {
         let current = self.moves[self.num_visited - 1];
         current.possible_moves(possible_moves);
-        possible_moves.retain(|pos| !self.moves[..self.num_visited].contains(pos))
+        possible_moves.retain(|pos| !self.visited[pos.as_index()])
     }
 }
 
