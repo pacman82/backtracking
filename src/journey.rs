@@ -45,7 +45,7 @@ impl Journey {
 
     pub fn fill_possible_moves(&self, possible_moves: &mut Vec<Position>) {
         let current = self.moves[self.num_visited - 1];
-        current.possible_moves(possible_moves);
+        current.reachable_fields(possible_moves);
         possible_moves.retain(|pos| !self.visited[pos.as_index()])
     }
 }

@@ -39,16 +39,18 @@ impl Iterator for Solutions {
             for _ in 0.. self.count - count + 1{
                 self.current.undo()
             }
+
             // We advance one move deeper into the search tree
             self.current.play_move(mov);
             self.count = count;
 
-            // Rollback current if it is ahead
+            // Emit solution
             if self.current.is_solution() {
                 assert!(self.current.is_solution());
                 return Some(self.current);
             }
 
+            // Extend search tree
             self.current.fill_possible_moves(&mut self.possible_moves);
             self.open
                 .extend(self.possible_moves.iter().map(|&position| {
