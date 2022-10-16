@@ -8,7 +8,7 @@ mod position;
 fn main() {
     let solutions = Solutions::new(Position::new(0, 0));
 
-    for (index, journey) in solutions.enumerate().take(200) {
+    for (index, journey) in solutions.enumerate().take(10) {
         let num_solution = index + 1;
         println!("{num_solution}: {journey}")
     }

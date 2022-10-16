@@ -34,6 +34,11 @@ impl Journey {
         self.num_visited += 1;
     }
 
+    pub fn undo(&mut self) {
+        self.num_visited -= 1;
+        self.visited[self.moves[self.num_visited].as_index()] = false;
+    }
+
     pub fn is_solution(&self) -> bool {
         self.num_visited == NUM_FIELDS
     }
