@@ -1,6 +1,6 @@
 use std::vec;
 
-use crate::{journey::Journey, position::Position};
+use crate::{journey::{Journey, Solution}, position::Position};
 
 pub struct Solutions {
     possible_moves: Vec<Position>,
@@ -28,7 +28,7 @@ struct Candidate {
 }
 
 impl Iterator for Solutions {
-    type Item = Journey;
+    type Item = Solution;
 
     fn next(&mut self) -> Option<Self::Item> {
 
@@ -45,9 +45,8 @@ impl Iterator for Solutions {
             self.count = count;
 
             // Emit solution
-            if self.current.is_solution() {
-                assert!(self.current.is_solution());
-                return Some(self.current);
+            if let Some(solution) = self.current.is_solution() {
+                return Some(solution);
             }
 
             // Extend search tree

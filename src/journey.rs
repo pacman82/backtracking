@@ -1,14 +1,10 @@
 use std::fmt::{self, Display, Formatter};
 
-use crate::position::Position;
+use crate::{position::Position, board::{NUM_FIELDS, Board}};
 
-// Dimensions of the chessboard
-const ROWS: usize = 8;
-const COLUMNS: usize = 8;
-const NUM_FIELDS: usize = ROWS * COLUMNS;
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Journey {
+    board: Board,
     /// Number of fields traveled
     num_visited: usize,
     /// For fast lookup, wether a position has been visited or not.
@@ -22,6 +18,7 @@ impl Journey {
         let mut visited = [false; NUM_FIELDS];
         visited[start.as_index()] = true;
         Self {
+            board: Board::new(),
             num_visited: 1,
             visited,
             moves: [start; NUM_FIELDS],
@@ -39,23 +36,29 @@ impl Journey {
         self.visited[self.moves[self.num_visited].as_index()] = false;
     }
 
-    pub fn is_solution(&self) -> bool {
-        self.num_visited == NUM_FIELDS
+    pub fn is_solution(&self) -> Option<Solution> {
+        if self.num_visited == NUM_FIELDS {
+            Some(Solution(self.moves))
+        } else {
+            None
+        }
     }
 
     pub fn fill_possible_moves(&self, possible_moves: &mut Vec<Position>) {
         let current = self.moves[self.num_visited - 1];
-        current.reachable_fields(possible_moves);
+        self.board.reachable_fields(current, possible_moves);
         possible_moves.retain(|pos| !self.visited[pos.as_index()])
     }
 }
 
-impl Display for Journey {
+impl Display for Solution {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.moves[0])?;
-        for m in &self.moves[1..self.num_visited] {
+        write!(f, "{}", self.0[0])?;
+        for m in &self.0[1..NUM_FIELDS] {
             write!(f, " {m}")?;
         }
         Ok(())
     }
 }
+
+pub struct Solution ([Position; NUM_FIELDS]);

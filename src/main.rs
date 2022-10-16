@@ -4,11 +4,12 @@ use position::Position;
 mod backtracking;
 mod journey;
 mod position;
+mod board;
 
 fn main() {
     let solutions = Solutions::new(Position::new(0, 0));
 
-    for (index, journey) in solutions.enumerate().take(10) {
+    for (index, journey) in solutions.enumerate().take(1) {
         let num_solution = index + 1;
         println!("{num_solution}: {journey}")
     }

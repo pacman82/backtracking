@@ -1,49 +1,35 @@
 use std::fmt::{self, Display, Formatter};
 
+use crate::board:: COLUMNS;
+
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Position {
-    index: i8
+    index: i8,
 }
 
 impl Position {
+    pub fn from_index(index: usize) -> Self {
+        Self {
+            index: index.try_into().unwrap()
+        }
+    }
+
     pub fn new(row: i8, column: i8) -> Self {
-        Self { index: row * 8 + column }
+        Self {
+            index: row * COLUMNS as i8 + column,
+        }
     }
 
     pub fn as_index(self) -> usize {
         self.index as usize
     }
 
-    /// All possible moves, taking into account the position in the board
-    pub fn reachable_fields(&self, possible_moves: &mut Vec<Position>) {
-        // Possible Moves of the knight
-        const MOVES: [(i8, i8); 8] = [
-            (-2, -1),
-            (-2, 1),
-            (-1, -2),
-            (-1, 2),
-            (1, -2),
-            (1, 2),
-            (2, -1),
-            (2, 1),
-        ];
-
-        possible_moves.clear();
-        possible_moves.extend(
-            MOVES
-                .iter()
-                .map(|(delta_row, delta_column)| (self.row() - delta_row, self.column() - delta_column))
-                .filter(|&(r, c)| (0..8).contains(&r) && (0..8).contains(&c))
-                .map(|(row, column)| Position::new(row, column)),
-        );
-    }
-
     pub fn row(self) -> i8 {
-        self.index / 8
+        self.index / COLUMNS as i8
     }
 
     pub fn column(self) -> i8 {
-        self.index % 8
+        self.index % COLUMNS as i8
     }
 }
 
