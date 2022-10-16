@@ -7,7 +7,7 @@ const ROWS: usize = 8;
 const COLUMNS: usize = 8;
 const NUM_FIELDS: usize = ROWS * COLUMNS;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Journey {
     /// Number of fields traveled
     num_visited: usize,

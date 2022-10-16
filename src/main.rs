@@ -25,7 +25,7 @@ mod tests {
         let mut possible = Vec::new();
         journey.fill_possible_moves(&mut possible);
         assert_eq!(
-            [Position::new(1, 2), Position::new(2, 1)].as_slice(),
+            [Position::new(2, 1), Position::new(1, 2)].as_slice(),
             &possible
         )
     }
