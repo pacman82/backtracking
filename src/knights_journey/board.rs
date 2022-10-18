@@ -1,4 +1,4 @@
-use crate::position::Position;
+use super::Position;
 
 // Dimensions of the chessboard
 pub const ROWS: usize = 8;

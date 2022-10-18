@@ -1,11 +1,8 @@
-use backtracking::Solutions;
-use journey::Journey;
-use position::Position;
-
 mod backtracking;
-mod board;
-mod journey;
-mod position;
+mod knights_journey;
+
+use backtracking::Solutions;
+use knights_journey::{Journey, Position};
 
 fn main() {
     let start = Position::new(0, 0);
@@ -20,7 +17,10 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::{backtracking::Game, journey::Journey, position::Position};
+    use crate::{
+        backtracking::Game,
+        knights_journey::{Journey, Position},
+    };
 
     #[test]
     fn fill_possible_moves() {

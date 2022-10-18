@@ -1,9 +1,10 @@
 use std::fmt::{self, Display, Formatter};
 
-use crate::{
-    backtracking::Game,
+use crate::backtracking::Game;
+
+use super::{
     board::{Board, NUM_FIELDS},
-    position::Position,
+    Position,
 };
 
 #[derive(Clone, Debug)]

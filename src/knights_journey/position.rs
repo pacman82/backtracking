@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
-use crate::board::COLUMNS;
+use super::board::COLUMNS;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Position {
