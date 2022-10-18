@@ -1,6 +1,10 @@
 use std::fmt::{self, Display, Formatter};
 
-use crate::{position::Position, board::{NUM_FIELDS, Board}};
+use crate::{
+    backtracking::Game,
+    board::{Board, NUM_FIELDS},
+    position::Position,
+};
 
 #[derive(Clone, Debug)]
 pub struct Journey {
@@ -24,31 +28,6 @@ impl Journey {
             moves: [start; NUM_FIELDS],
         }
     }
-
-    pub fn play_move(&mut self, next: Position) {
-        self.moves[self.num_visited] = next;
-        self.visited[next.as_index()] = true;
-        self.num_visited += 1;
-    }
-
-    pub fn undo(&mut self) {
-        self.num_visited -= 1;
-        self.visited[self.moves[self.num_visited].as_index()] = false;
-    }
-
-    pub fn is_solution(&self) -> Option<Solution> {
-        if self.num_visited == NUM_FIELDS {
-            Some(Solution(self.moves))
-        } else {
-            None
-        }
-    }
-
-    pub fn fill_possible_moves(&self, possible_moves: &mut Vec<Position>) {
-        let current = self.moves[self.num_visited - 1];
-        self.board.reachable_fields(current, possible_moves);
-        possible_moves.retain(|pos| !self.visited[pos.as_index()])
-    }
 }
 
 impl Display for Solution {
@@ -61,4 +40,34 @@ impl Display for Solution {
     }
 }
 
-pub struct Solution ([Position; NUM_FIELDS]);
+impl Game for Journey {
+    type Move = Position;
+    type Solution = Solution;
+
+    fn fill_possible_moves(&self, possible_moves: &mut Vec<Position>) {
+        let current = self.moves[self.num_visited - 1];
+        self.board.reachable_fields(current, possible_moves);
+        possible_moves.retain(|pos| !self.visited[pos.as_index()])
+    }
+
+    fn undo(&mut self) {
+        self.num_visited -= 1;
+        self.visited[self.moves[self.num_visited].as_index()] = false;
+    }
+
+    fn play_move(&mut self, next: Position) {
+        self.moves[self.num_visited] = next;
+        self.visited[next.as_index()] = true;
+        self.num_visited += 1;
+    }
+
+    fn is_solution(&self) -> Option<Solution> {
+        if self.num_visited == NUM_FIELDS {
+            Some(Solution(self.moves))
+        } else {
+            None
+        }
+    }
+}
+
+pub struct Solution([Position; NUM_FIELDS]);

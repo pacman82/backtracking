@@ -1,15 +1,18 @@
 use backtracking::Solutions;
+use journey::Journey;
 use position::Position;
 
 mod backtracking;
+mod board;
 mod journey;
 mod position;
-mod board;
 
 fn main() {
-    let solutions = Solutions::new(Position::new(0, 0));
+    let start = Position::new(0, 0);
+    let init = Journey::new(start);
+    let solutions = Solutions::new(init);
 
-    for (index, journey) in solutions.enumerate().take(1) {
+    for (index, journey) in solutions.enumerate().take(10) {
         let num_solution = index + 1;
         println!("{num_solution}: {journey}")
     }
@@ -17,7 +20,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::{journey::Journey, position::Position};
+    use crate::{backtracking::Game, journey::Journey, position::Position};
 
     #[test]
     fn fill_possible_moves() {
