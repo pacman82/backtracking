@@ -1,5 +1,6 @@
 mod backtracking;
 mod knights_journey;
+mod sudoku;
 
 use backtracking::Solutions;
 use knights_journey::{Journey, Position};
