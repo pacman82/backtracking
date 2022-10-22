@@ -2,27 +2,29 @@ use std::io::{self, Write};
 
 use crate::backtracking::Game;
 
+#[derive(Clone)]
 pub struct Sudoku {
     /// All 9 by 9 fields, in top to bottom, left to right order. `0` represents empty. Other valid
     /// values are 1..=9
-    fields: [u8; 9*9],
+    fields: [u8; 9 * 9],
+    /// Order of indices in which numbers were entered into the field, so we can support rollback
+    history: Vec<u8>,
 }
 
 impl Sudoku {
     pub fn new() -> Self {
-        let fields = [0u8; 9*9];
+        let fields = [0u8; 9 * 9];
         Self::from_bytes(fields)
     }
 
-    pub fn from_bytes(bytes: [u8; 9*9]) -> Self {
+    pub fn from_bytes(bytes: [u8; 9 * 9]) -> Self {
         if bytes.iter().any(|&n| n > 9) {
             panic!("Only values from 0 to 9 are valid.")
         }
-        Self { fields: bytes }
-    }
-
-    pub fn from_slice(bytes: &[u8]) -> Self {
-        Self::from_bytes(bytes.try_into().unwrap())
+        Self {
+            fields: bytes,
+            history: Vec::new(),
+        }
     }
 
     pub fn print_to(&self, to: &mut impl Write) -> io::Result<()> {
@@ -34,11 +36,26 @@ impl Sudoku {
             match self.fields[index] {
                 0 => write!(to, "X")?,
                 n @ 1..=9 => write!(to, "{n}")?,
-                _ => unreachable!()
+                _ => unreachable!(),
             };
         }
         writeln!(to)?;
         Ok(())
+    }
+
+    pub fn possible_digits_at(&self, index: u8) -> impl Iterator<Item = u8> + '_ {
+        let row = index as usize / 9;
+        let col = index as usize % 9;
+        let group = col / 3 + (row / 3) * 3;
+        // Index upper right corner of group
+        let group_off = group * 3 + (group / 3) * 18;
+        let is_in_row = move |digit| (0..9).any(|c| self.fields[c + row * 9] == digit);
+        let is_in_col = move |digit| (0..9).any(|r| self.fields[col + r * 9] == digit);
+        let is_in_group = move |digit| (0..9).any(|i| self.fields[group_off + i % 3 + (i / 3) * 9] == digit);
+        (1..=9)
+            .filter(move |digit| !is_in_row(*digit))
+            .filter(move |digit| !is_in_col(*digit))
+            .filter(move |digit| !is_in_group(*digit))
     }
 }
 
@@ -56,29 +73,54 @@ pub struct WriteDigit {
 
 impl Game for Sudoku {
     type Move = WriteDigit;
-
     type Solution = Sudoku;
 
-    fn fill_possible_moves(&self, possible_moves: &mut Vec<Self::Move>) {
-        todo!()
+    // We look over all posibilities for the first free index
+    fn fill_possible_moves(&self, possible_moves: &mut Vec<WriteDigit>) {
+        possible_moves.clear();
+        if let Some(index) = self.fields.iter().position(|value| *value == 0) {
+            let index = index as u8;
+            let mut all_possible_digits = self.possible_digits_at(index);
+            // Treat the first digit special, because we want to shirt circut in case we there is
+            // not even one digit.
+            if let Some(digit) = all_possible_digits.next() {
+                possible_moves.push(WriteDigit {index, digit});
+            } else {
+                // Not even one possible digit could be found for this field. This implies that this
+                // Sudoku is unsolvable and has no possible moves, since we verified that this field
+                // is free.
+                possible_moves.clear();
+                return;
+            }
+            // Add the remaining digits for this field to the possibilities
+            possible_moves.extend(all_possible_digits.map(|digit| WriteDigit {index, digit}));
+        }
     }
 
     fn undo(&mut self) {
-        todo!()
+        let last = self.history.pop().unwrap();
+        self.fields[last as usize] = 0;
     }
 
-    fn play_move(&mut self, next: Self::Move) {
-        todo!()
+    fn play_move(&mut self, move_: WriteDigit) {
+        self.fields[move_.index as usize] = move_.digit;
+        self.history.push(move_.index);
     }
 
     fn is_solution(&self) -> Option<Self::Solution> {
-        todo!()
+        if self.history.len() == 9 * 9 {
+            Some(self.clone())
+        } else {
+            None
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Sudoku;
+    use crate::backtracking::Game;
+
+    use super::{Sudoku, WriteDigit};
 
     #[test]
     fn print_empty_sudoku() {
@@ -87,9 +129,7 @@ mod tests {
 
         game.print_to(&mut out).unwrap();
 
-
-        let expect =
-            "XXXXXXXXX\n\
+        let expect = "XXXXXXXXX\n\
             XXXXXXXXX\n\
             XXXXXXXXX\n\
             XXXXXXXXX\n\
@@ -100,5 +140,84 @@ mod tests {
             XXXXXXXXX\n\
         ";
         assert_eq!(expect, std::str::from_utf8(&out).unwrap());
+    }
+
+    #[test]
+    fn print_with_first_row_filled() {
+        let mut out = Vec::new();
+        let mut game = Sudoku::new();
+        game.play_move(WriteDigit { index: 0, digit: 1 });
+        game.play_move(WriteDigit { index: 1, digit: 2 });
+        game.play_move(WriteDigit { index: 2, digit: 3 });
+        game.play_move(WriteDigit { index: 3, digit: 4 });
+        game.play_move(WriteDigit { index: 4, digit: 5 });
+        game.play_move(WriteDigit { index: 5, digit: 6 });
+        game.play_move(WriteDigit { index: 6, digit: 7 });
+        game.play_move(WriteDigit { index: 7, digit: 8 });
+        game.play_move(WriteDigit { index: 8, digit: 9 });
+
+        game.print_to(&mut out).unwrap();
+
+        let expect = "123456789\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+            XXXXXXXXX\n\
+        ";
+        assert_eq!(expect, std::str::from_utf8(&out).unwrap());
+    }
+
+    #[test]
+    fn prevent_same_digit_twice_in_same_row() {
+        let mut game = Sudoku::new();
+        game.play_move(WriteDigit { index: 0, digit: 2 });
+        game.play_move(WriteDigit { index: 8, digit: 5 });
+        // Won't play a role, because neither same group, row or column
+        game.play_move(WriteDigit {
+            index: 7 * 9 + 6,
+            digit: 5,
+        });
+
+        let possibilities = game.possible_digits_at(1).collect::<Vec<u8>>();
+
+        assert_eq!(&[1u8, 3, 4, 6, 7, 8, 9][..], possibilities);
+    }
+
+    #[test]
+    fn prevent_same_digit_twice_in_same_col() {
+        let mut game = Sudoku::new();
+        game.play_move(WriteDigit { index: 3, digit: 2 });
+        game.play_move(WriteDigit {
+            index: 3 + 9 * 5,
+            digit: 5,
+        });
+
+        let possibilities = game.possible_digits_at(3 + 9 * 2).collect::<Vec<u8>>();
+
+        assert_eq!(&[1u8, 3, 4, 6, 7, 8, 9][..], possibilities);
+    }
+
+    #[test]
+    fn short_ciruct_if_one_field_has_no_more_possibile_digits() {
+        let mut game = Sudoku::new();
+        game.play_move(WriteDigit { index: 0, digit: 1 });
+        game.play_move(WriteDigit { index: 1, digit: 2 });
+        game.play_move(WriteDigit { index: 2, digit: 3 });
+        game.play_move(WriteDigit { index: 3, digit: 4 });
+        game.play_move(WriteDigit { index: 4, digit: 5 });
+        game.play_move(WriteDigit { index: 5, digit: 6 });
+        game.play_move(WriteDigit { index: 6, digit: 7 });
+        game.play_move(WriteDigit { index: 7, digit: 8 });
+        game.play_move(WriteDigit { index: 9 + 8, digit: 9 });
+
+        let mut possible_moves = Vec::new();
+        game.fill_possible_moves(&mut possible_moves);
+
+        assert_eq!(0, game.possible_digits_at(8).count());
+        assert!(possible_moves.is_empty());
     }
 }
