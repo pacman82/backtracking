@@ -1,6 +1,15 @@
-use std::io::{self, Write};
+use std::io::{self, Write, stdout};
 
-use crate::backtracking::Game;
+use backtracking::{Game, Solutions};
+
+fn main() -> io::Result<()> {
+    // An empty sudoku field
+    let sudoku = Sudoku::new();
+    for solution in Solutions::new(sudoku).take(1) {
+        solution.print_to(&mut stdout())?
+    }
+    Ok(())
+}
 
 #[derive(Clone)]
 pub struct Sudoku {
@@ -118,7 +127,7 @@ impl Game for Sudoku {
 
 #[cfg(test)]
 mod tests {
-    use crate::backtracking::Game;
+    use crate::lib::Game;
 
     use super::{Sudoku, WriteDigit};
 
