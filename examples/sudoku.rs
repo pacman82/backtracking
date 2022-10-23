@@ -1,6 +1,6 @@
 use std::io::{self, Write, stdout};
 
-use backtracking::{Game, Solutions};
+use backtracking::{Problem, Solutions};
 
 fn main() -> io::Result<()> {
     // An empty sudoku field
@@ -80,12 +80,12 @@ pub struct WriteDigit {
     digit: u8,
 }
 
-impl Game for Sudoku {
-    type Move = WriteDigit;
+impl Problem for Sudoku {
+    type Decision = WriteDigit;
     type Solution = Sudoku;
 
     // We look over all posibilities for the first free index
-    fn fill_possible_moves(&self, possible_moves: &mut Vec<WriteDigit>) {
+    fn next_decisions(&self, possible_moves: &mut Vec<WriteDigit>) {
         possible_moves.clear();
         if let Some(index) = self.fields.iter().position(|value| *value == 0) {
             let index = index as u8;

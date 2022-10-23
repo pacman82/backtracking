@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
 
-use backtracking::Game;
+use backtracking::Problem;
 
 use super::{
     board::{Board, NUM_FIELDS},
@@ -41,11 +41,11 @@ impl Display for Solution {
     }
 }
 
-impl Game for Journey {
-    type Move = Position;
+impl Problem for Journey {
+    type Decision = Position;
     type Solution = Solution;
 
-    fn fill_possible_moves(&self, possible_moves: &mut Vec<Position>) {
+    fn next_decisions(&self, possible_moves: &mut Vec<Position>) {
         let current = self.moves[self.num_visited - 1];
         self.board.reachable_fields(current, possible_moves);
         possible_moves.retain(|pos| !self.visited[pos.as_index()])

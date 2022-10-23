@@ -1,24 +1,26 @@
-pub trait Game {
-    type Move: Copy;
+/// Keeps track of the decisions and the state changes they cause, for the problem we want to find
+/// solutions to.
+pub trait Problem {
+    type Decision: Copy;
     type Solution;
 
-    fn fill_possible_moves(&self, possible_moves: &mut Vec<Self::Move>);
+    fn next_decisions(&self, possible_moves: &mut Vec<Self::Decision>);
     fn undo(&mut self);
-    fn play_move(&mut self, next: Self::Move);
+    fn play_move(&mut self, next: Self::Decision);
     fn is_solution(&self) -> Option<Self::Solution>;
 }
 
-pub struct Solutions<G: Game> {
-    possible_moves: Vec<G::Move>,
-    open: Vec<Candidate<G::Move>>,
+pub struct Solutions<G: Problem> {
+    decisions: Vec<G::Decision>,
+    open: Vec<Candidate<G::Decision>>,
     current: G,
     count: i32,
 }
 
-impl<G: Game> Solutions<G> {
+impl<G: Problem> Solutions<G> {
     pub fn new(init: G) -> Self {
         let mut possible_moves = Vec::new();
-        init.fill_possible_moves(&mut possible_moves);
+        init.next_decisions(&mut possible_moves);
         let open = possible_moves
             .iter()
             .map(|pos| Candidate {
@@ -27,7 +29,7 @@ impl<G: Game> Solutions<G> {
             })
             .collect();
         Self {
-            possible_moves,
+            decisions: possible_moves,
             open,
             current: init,
             count: 0,
@@ -42,7 +44,7 @@ struct Candidate<M> {
     mov: M,
 }
 
-impl<G: Game> Iterator for Solutions<G> {
+impl<G: Problem> Iterator for Solutions<G> {
     type Item = G::Solution;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -64,9 +66,9 @@ impl<G: Game> Iterator for Solutions<G> {
             }
 
             // Extend search tree
-            self.current.fill_possible_moves(&mut self.possible_moves);
+            self.current.next_decisions(&mut self.decisions);
             self.open
-                .extend(self.possible_moves.iter().map(|&position| Candidate {
+                .extend(self.decisions.iter().map(|&position| Candidate {
                     count: count + 1,
                     mov: position,
                 }))
