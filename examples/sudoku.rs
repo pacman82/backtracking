@@ -1,4 +1,4 @@
-use std::io::{self, Write, stdout};
+use std::io::{self, stdout, Write};
 
 use backtracking::{Problem, Solutions};
 
@@ -60,7 +60,8 @@ impl Sudoku {
         let group_off = group * 3 + (group / 3) * 18;
         let is_in_row = move |digit| (0..9).any(|c| self.fields[c + row * 9] == digit);
         let is_in_col = move |digit| (0..9).any(|r| self.fields[col + r * 9] == digit);
-        let is_in_group = move |digit| (0..9).any(|i| self.fields[group_off + i % 3 + (i / 3) * 9] == digit);
+        let is_in_group =
+            move |digit| (0..9).any(|i| self.fields[group_off + i % 3 + (i / 3) * 9] == digit);
         (1..=9)
             .filter(move |digit| !is_in_row(*digit))
             .filter(move |digit| !is_in_col(*digit))
@@ -93,7 +94,7 @@ impl Problem for Sudoku {
             // Treat the first digit special, because we want to shirt circut in case we there is
             // not even one digit.
             if let Some(digit) = all_possible_digits.next() {
-                possible_moves.push(WriteDigit {index, digit});
+                possible_moves.push(WriteDigit { index, digit });
             } else {
                 // Not even one possible digit could be found for this field. This implies that this
                 // Sudoku is unsolvable and has no possible moves, since we verified that this field
@@ -102,7 +103,7 @@ impl Problem for Sudoku {
                 return;
             }
             // Add the remaining digits for this field to the possibilities
-            possible_moves.extend(all_possible_digits.map(|digit| WriteDigit {index, digit}));
+            possible_moves.extend(all_possible_digits.map(|digit| WriteDigit { index, digit }));
         }
     }
 
@@ -221,7 +222,10 @@ mod tests {
         game.play_move(WriteDigit { index: 5, digit: 6 });
         game.play_move(WriteDigit { index: 6, digit: 7 });
         game.play_move(WriteDigit { index: 7, digit: 8 });
-        game.play_move(WriteDigit { index: 9 + 8, digit: 9 });
+        game.play_move(WriteDigit {
+            index: 9 + 8,
+            digit: 9,
+        });
 
         let mut possible_moves = Vec::new();
         game.fill_possible_moves(&mut possible_moves);
