@@ -1,5 +1,5 @@
-/// Keeps track of the decisions and the state changes they cause, for the problem we want to find
-/// solutions to.
+/// A problem to be tackled with backtracking. Used by the [`Solutions`] iterator which can find
+/// solutions for ypes implementing [`Problem`].
 pub trait Problem {
     type Decision: Copy;
     type Solution;
@@ -10,6 +10,7 @@ pub trait Problem {
     fn is_solution(&self) -> Option<Self::Solution>;
 }
 
+/// An iterator performing backtracking to find solutions to a problem.
 pub struct Solutions<G: Problem> {
     decisions: Vec<G::Decision>,
     open: Vec<Candidate<G::Decision>>,
