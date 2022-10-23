@@ -4,7 +4,17 @@ use backtracking::{Problem, Solutions};
 
 fn main() -> io::Result<()> {
     // An empty sudoku field
-    let sudoku = Sudoku::new();
+    let sudoku = Sudoku::from_bytes([
+        6,0,3,0,0,0,1,0,0,
+        0,0,9,0,0,0,2,0,0,
+        0,0,7,4,0,9,0,0,0,
+        0,0,0,0,1,0,0,0,7,
+        4,0,0,0,6,0,0,0,0,
+        0,0,0,0,7,0,0,5,3,
+        0,1,0,0,0,0,0,4,0,
+        0,0,6,3,0,7,0,9,0,
+        0,9,0,0,0,2,0,3,0
+    ]);
     for solution in Solutions::new(sudoku).take(1) {
         solution.print_to(&mut stdout())?
     }
@@ -118,7 +128,7 @@ impl Problem for Sudoku {
     }
 
     fn is_solution(&self) -> Option<Self::Solution> {
-        if self.history.len() == 9 * 9 {
+        if self.fields.iter().all(|digit| *digit != 0) {
             Some(self.clone())
         } else {
             None
