@@ -5,15 +5,9 @@ use backtracking::{Problem, Solutions};
 fn main() -> io::Result<()> {
     // An empty sudoku field
     let sudoku = Sudoku::from_bytes([
-        6,0,3,0,0,0,1,0,0,
-        0,0,9,0,0,0,2,0,0,
-        0,0,7,4,0,9,0,0,0,
-        0,0,0,0,1,0,0,0,7,
-        4,0,0,0,6,0,0,0,0,
-        0,0,0,0,7,0,0,5,3,
-        0,1,0,0,0,0,0,4,0,
-        0,0,6,3,0,7,0,9,0,
-        0,9,0,0,0,2,0,3,0
+        6, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 9, 0, 0, 0, 2, 0, 0, 0, 0, 7, 4, 0, 9, 0, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 7, 4, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 5, 3, 0, 1, 0, 0, 0, 0,
+        0, 4, 0, 0, 0, 6, 3, 0, 7, 0, 9, 0, 0, 9, 0, 0, 0, 2, 0, 3, 0,
     ]);
     for solution in Solutions::new(sudoku).take(1) {
         solution.print_to(&mut stdout())?
@@ -26,8 +20,6 @@ pub struct Sudoku {
     /// All 9 by 9 fields, in top to bottom, left to right order. `0` represents empty. Other valid
     /// values are 1..=9
     fields: [u8; 9 * 9],
-    /// Order of indices in which numbers were entered into the field, so we can support rollback
-    history: Vec<u8>,
 }
 
 impl Sudoku {
@@ -42,7 +34,6 @@ impl Sudoku {
         }
         Self {
             fields: bytes,
-            history: Vec::new(),
         }
     }
 
@@ -117,17 +108,15 @@ impl Problem for Sudoku {
         }
     }
 
-    fn undo(&mut self) {
-        let last = self.history.pop().unwrap();
-        self.fields[last as usize] = 0;
+    fn undo(&mut self, last: &WriteDigit, _history: &[WriteDigit]) {
+        self.fields[last.index as usize] = 0;
     }
 
     fn play_move(&mut self, move_: WriteDigit) {
         self.fields[move_.index as usize] = move_.digit;
-        self.history.push(move_.index);
     }
 
-    fn is_solution(&self) -> Option<Self::Solution> {
+    fn is_solution(&self, _history: &[WriteDigit]) -> Option<Self::Solution> {
         if self.fields.iter().all(|digit| *digit != 0) {
             Some(self.clone())
         } else {

@@ -10,12 +10,12 @@ use super::{
 #[derive(Clone, Debug)]
 pub struct Journey {
     board: Board,
-    /// Number of fields traveled
-    num_visited: usize,
     /// For fast lookup, wether a position has been visited or not.
     visited: [bool; NUM_FIELDS],
-    /// Order of moves visited so far. Only meaningful until `num_visited`.
-    moves: [Position; NUM_FIELDS],
+    /// Currenty position of the knight
+    current: Position,
+    /// Starting position
+    start: Position,
 }
 
 impl Journey {
@@ -24,9 +24,9 @@ impl Journey {
         visited[start.as_index()] = true;
         Self {
             board: Board::new(),
-            num_visited: 1,
             visited,
-            moves: [start; NUM_FIELDS],
+            current: start,
+            start,
         }
     }
 }
@@ -46,25 +46,25 @@ impl Problem for Journey {
     type Solution = Solution;
 
     fn next_decisions(&self, possible_moves: &mut Vec<Position>) {
-        let current = self.moves[self.num_visited - 1];
-        self.board.reachable_fields(current, possible_moves);
+        self.board.reachable_fields(self.current, possible_moves);
         possible_moves.retain(|pos| !self.visited[pos.as_index()])
     }
 
-    fn undo(&mut self) {
-        self.num_visited -= 1;
-        self.visited[self.moves[self.num_visited].as_index()] = false;
+    fn undo(&mut self, last : &Position, history: &[Position]) {
+        self.current = history.last().copied().unwrap_or(self.start);
+        self.visited[last.as_index()] = false;
     }
 
     fn play_move(&mut self, next: Position) {
-        self.moves[self.num_visited] = next;
+        self.current = next;
         self.visited[next.as_index()] = true;
-        self.num_visited += 1;
     }
 
-    fn is_solution(&self) -> Option<Solution> {
-        if self.num_visited == NUM_FIELDS {
-            Some(Solution(self.moves))
+    fn is_solution(&self, history: &[Position]) -> Option<Solution> {
+        if history.len() == NUM_FIELDS - 1{
+            let mut moves = [self.start; NUM_FIELDS];
+            moves[1..].copy_from_slice(history);
+            Some(Solution(moves))
         } else {
             None
         }
