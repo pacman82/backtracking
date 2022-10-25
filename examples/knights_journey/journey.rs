@@ -42,7 +42,7 @@ impl Display for Solution {
 }
 
 impl Problem for Journey {
-    type Decision = Position;
+    type Posibility = Position;
     type Solution = Solution;
 
     fn next_decisions(&self, possible_moves: &mut Vec<Position>) {
@@ -55,7 +55,7 @@ impl Problem for Journey {
         self.visited[last.as_index()] = false;
     }
 
-    fn play_move(&mut self, next: Position) {
+    fn decide(&mut self, next: Position) {
         self.current = next;
         self.visited[next.as_index()] = true;
     }

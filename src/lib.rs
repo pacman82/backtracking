@@ -1,26 +1,26 @@
 /// A problem to be tackled with backtracking. Used by the [`Solutions`] iterator which can find
 /// solutions for ypes implementing [`Problem`].
 pub trait Problem {
-    type Decision: Copy;
+    type Posibility: Copy;
     type Solution;
 
     /// Extends `possibilities` with a set of decisions to be considered next. Implementations may
     /// assume that the `possibilities` is empty if invoked through the `Solutions` iterator.
-    fn next_decisions(&self, possibilities: &mut Vec<Self::Decision>);
+    fn next_decisions(&self, possibilities: &mut Vec<Self::Posibility>);
     /// Undo the last decision made. If invoked by the [`Solutions`] iterator `last` is to be
     /// guaranteed, to be the last decision made with [`do`]
-    fn undo(&mut self, last: &Self::Decision, history: &[Self::Decision]);
-    fn play_move(&mut self, next: Self::Decision);
-    fn is_solution(&self, history: &[Self::Decision]) -> Option<Self::Solution>;
+    fn undo(&mut self, last: &Self::Posibility, history: &[Self::Posibility]);
+    fn decide(&mut self, next: Self::Posibility);
+    fn is_solution(&self, history: &[Self::Posibility]) -> Option<Self::Solution>;
 }
 
 /// An iterator performing backtracking to find solutions to a problem.
 pub struct Solutions<G: Problem> {
-    decisions: Vec<G::Decision>,
-    open: Vec<Candidate<G::Decision>>,
+    decisions: Vec<G::Posibility>,
+    open: Vec<Candidate<G::Posibility>>,
     /// Keeps track of the decisions, which yielded the current problem state, starting from the
     /// initial state.
-    history: Vec<G::Decision>,
+    history: Vec<G::Posibility>,
     current: G,
 }
 
@@ -65,7 +65,7 @@ impl<G: Problem> Iterator for Solutions<G> {
             }
 
             // We advance one move deeper into the search tree
-            self.current.play_move(mov);
+            self.current.decide(mov);
             self.history.push(mov);
 
             // Emit solution

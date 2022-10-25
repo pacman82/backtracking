@@ -83,7 +83,7 @@ pub struct WriteDigit {
 }
 
 impl Problem for Sudoku {
-    type Decision = WriteDigit;
+    type Posibility = WriteDigit;
     type Solution = Sudoku;
 
     // We look over all posibilities for the first free index
@@ -111,7 +111,7 @@ impl Problem for Sudoku {
         self.fields[last.index as usize] = 0;
     }
 
-    fn play_move(&mut self, move_: WriteDigit) {
+    fn decide(&mut self, move_: WriteDigit) {
         self.fields[move_.index as usize] = move_.digit;
     }
 
