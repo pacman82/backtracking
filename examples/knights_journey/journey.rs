@@ -45,7 +45,7 @@ impl Problem for Journey {
     type Posibility = Position;
     type Solution = Solution;
 
-    fn next_decisions(&self, possible_moves: &mut Vec<Position>) {
+    fn next_decisions(&self, possible_moves: &mut Vec<Position>, _history: &[Position]) {
         self.board.reachable_fields(self.current, possible_moves);
         possible_moves.retain(|pos| !self.visited[pos.as_index()])
     }

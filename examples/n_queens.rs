@@ -12,41 +12,15 @@ fn main() {
 #[derive(Clone)]
 struct NQueens {
     n: u32,
-    /// Position of queens in each row
-    queens: Vec<QueenAt>,
 }
 
 impl NQueens {
     fn new(n: u32) -> Self {
-        Self {
-            n,
-            queens: Vec::new(),
-        }
+        Self { n }
     }
 }
 
-impl Display for NQueens {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut queens = self.queens.clone();
-        queens.sort_by_key(|q| q.row);
-
-        let repeat_point = |f: &mut Formatter, n| {
-            for _ in 0..n {
-                write!(f, ".")?;
-            }
-            Ok(())
-        };
-
-        for queen in queens {
-            repeat_point(f, queen.column)?;
-            write!(f, "Q")?;
-            repeat_point(f, self.n - queen.column - 1)?;
-            writeln!(f)?;
-        }
-        Ok(())
-    }
-}
-
+/// Possition of an individual queen on the board
 #[derive(Clone, Copy)]
 struct QueenAt {
     row: u32,
@@ -64,33 +38,57 @@ impl QueenAt {
 
 impl Problem for NQueens {
     type Posibility = QueenAt;
-    type Solution = NQueens;
+    type Solution = NQueensSolution;
 
-    fn next_decisions(&self, possible_moves: &mut Vec<QueenAt>) {
-        if self.queens.len() == self.n as usize {
+    fn next_decisions(&self, possible_moves: &mut Vec<QueenAt>, history: &[QueenAt]) {
+        if history.len() == self.n as usize {
             return;
         }
         // Give all possible position for the top empty row
-        let possibilities = (0..self.n).map(|col| QueenAt {
-            row: self.queens.len() as u32,
-            column: col,
-        }).filter(|candidate| self.queens.iter().all(|q| !q.conflicts(*candidate)));
+        let possibilities = (0..self.n)
+            .map(|col| QueenAt {
+                row: history.len() as u32,
+                column: col,
+            })
+            .filter(|candidate| history.iter().all(|q| !q.conflicts(*candidate)));
         possible_moves.extend(possibilities);
     }
 
-    fn undo(&mut self, _last: &Self::Posibility, _history: &[Self::Posibility]) {
-        self.queens.pop();
-    }
+    fn undo(&mut self, _last: &Self::Posibility, _history: &[Self::Posibility]) {}
 
-    fn decide(&mut self, next: QueenAt) {
-        self.queens.push(next);
-    }
+    fn decide(&mut self, _next: QueenAt) {}
 
-    fn is_solution(&self, _history: &[Self::Posibility]) -> Option<Self::Solution> {
-        if self.queens.len() == self.n as usize {
-            Some(self.clone())
+    fn is_solution(&self, history: &[QueenAt]) -> Option<NQueensSolution> {
+        if history.len() == self.n as usize {
+            let mut solution = vec![0; self.n as usize];
+            for queen in history {
+                solution[queen.row as usize] = queen.column;
+            }
+            Some(NQueensSolution(solution))
         } else {
             None
         }
+    }
+}
+
+/// Solution to the n queens problem. Nth index of vec contains column index of queen in n-th row.
+struct NQueensSolution(Vec<u32>);
+
+impl Display for NQueensSolution {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let repeat_point = |f: &mut Formatter, n| {
+            for _ in 0..n {
+                write!(f, ".")?;
+            }
+            Ok(())
+        };
+
+        for &pos in &self.0 {
+            repeat_point(f, pos)?;
+            write!(f, "Q")?;
+            repeat_point(f, self.0.len() as u32 - pos - 1)?;
+            writeln!(f)?;
+        }
+        Ok(())
     }
 }
