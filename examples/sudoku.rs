@@ -88,7 +88,6 @@ impl Problem for Sudoku {
 
     // We look over all posibilities for the first free index
     fn next_decisions(&self, possible_moves: &mut Vec<WriteDigit>) {
-        possible_moves.clear();
         if let Some(index) = self.fields.iter().position(|value| *value == 0) {
             let index = index as u8;
             let mut all_possible_digits = self.possible_digits_at(index);

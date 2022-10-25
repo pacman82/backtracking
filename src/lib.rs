@@ -4,7 +4,9 @@ pub trait Problem {
     type Decision: Copy;
     type Solution;
 
-    fn next_decisions(&self, possible_moves: &mut Vec<Self::Decision>);
+    /// Extends `possibilities` with a set of decisions to be considered next. Implementations may
+    /// assume that the `possibilities` is empty if invoked through the `Solutions` iterator.
+    fn next_decisions(&self, possibilities: &mut Vec<Self::Decision>);
     /// Undo the last decision made. If invoked by the [`Solutions`] iterator `last` is to be
     /// guaranteed, to be the last decision made with [`do`]
     fn undo(&mut self, last: &Self::Decision, history: &[Self::Decision]);
@@ -72,6 +74,7 @@ impl<G: Problem> Iterator for Solutions<G> {
             }
 
             // Extend search tree
+            self.decisions.clear();
             self.current.next_decisions(&mut self.decisions);
             self.open
                 .extend(self.decisions.iter().map(|&position| Candidate {
