@@ -111,7 +111,7 @@ impl Problem for Sudoku {
         self.fields[last.index as usize] = 0;
     }
 
-    fn decide(&mut self, move_: WriteDigit) {
+    fn what_if(&mut self, move_: WriteDigit) {
         self.fields[move_.index as usize] = move_.digit;
     }
 

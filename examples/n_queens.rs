@@ -56,7 +56,7 @@ impl Problem for NQueens {
 
     fn undo(&mut self, _last: &Self::Posibility, _history: &[Self::Posibility]) {}
 
-    fn decide(&mut self, _next: QueenAt) {}
+    fn what_if(&mut self, _next: QueenAt) {}
 
     fn is_solution(&self, history: &[QueenAt]) -> Option<NQueensSolution> {
         if history.len() == self.n as usize {

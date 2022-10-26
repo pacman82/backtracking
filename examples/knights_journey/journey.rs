@@ -55,7 +55,7 @@ impl Problem for Journey {
         self.visited[last.as_index()] = false;
     }
 
-    fn decide(&mut self, next: Position) {
+    fn what_if(&mut self, next: Position) {
         self.current = next;
         self.visited[next.as_index()] = true;
     }

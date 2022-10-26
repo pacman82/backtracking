@@ -1,7 +1,20 @@
+//! Find solutions with backtracking.
+
 /// A problem to be tackled with backtracking. Used by the [`Solutions`] iterator which can find
 /// solutions for ypes implementing [`Problem`].
+/// 
+/// Technically any problem solvable with backtracking would not need to keep any state, apart from
+/// the initial state, since all the essential input is part of the history. An empty implementation
+/// for [`Problem::what_if`] and [`Problem::undo`] would always be sufficient. Given the large
+/// search space for many of these problems, though, real world implementation are likely to keep
+/// some cached state, which is updated in these methods.
 pub trait Problem {
+    /// Describes a decision made in a problem state leading to a new candidate for a solution. E.g.
+    /// which field to jump to in a knights journey problem or which digit to write into a cell for
+    /// a sudoku puzzle.
     type Posibility: Copy;
+    /// Final state we are interested in. E.g. The history of moves made for a knights journey, or
+    /// the final distribution of digits in the cells of a sudoku puzzle.
     type Solution;
 
     /// Extends `possibilities` with a set of decisions to be considered next. Implementations may
@@ -14,7 +27,13 @@ pub trait Problem {
     /// Undo the last decision made. If invoked by the [`Solutions`] iterator `last` is to be
     /// guaranteed, to be the last decision made with [`do`]
     fn undo(&mut self, last: &Self::Posibility, history: &[Self::Posibility]);
-    fn decide(&mut self, next: Self::Posibility);
+
+    /// Update internal caches to reflect a scenario in which we would decide to execute the given
+    /// possibility.
+    fn what_if(&mut self, decision: Self::Posibility);
+
+    /// Check if the candidate state we are looking at is a solution to our probelm. If so extract
+    /// the information we are interessted in.
     fn is_solution(&self, history: &[Self::Posibility]) -> Option<Self::Solution>;
 }
 
@@ -69,7 +88,7 @@ impl<G: Problem> Iterator for Solutions<G> {
             }
 
             // We advance one move deeper into the search tree
-            self.current.decide(mov);
+            self.current.what_if(mov);
             self.history.push(mov);
 
             // Emit solution
