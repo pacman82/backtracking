@@ -50,7 +50,7 @@ impl Problem for Journey {
         possible_moves.retain(|pos| !self.visited[pos.as_index()])
     }
 
-    fn undo(&mut self, last : &Position, history: &[Position]) {
+    fn undo(&mut self, last: &Position, history: &[Position]) {
         self.current = history.last().copied().unwrap_or(self.start);
         self.visited[last.as_index()] = false;
     }
@@ -61,7 +61,7 @@ impl Problem for Journey {
     }
 
     fn is_solution(&self, history: &[Position]) -> Option<Solution> {
-        if history.len() == NUM_FIELDS - 1{
+        if history.len() == NUM_FIELDS - 1 {
             let mut moves = [self.start; NUM_FIELDS];
             moves[1..].copy_from_slice(history);
             Some(Solution(moves))

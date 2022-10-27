@@ -2,7 +2,7 @@
 
 /// A problem to be tackled with backtracking. Used by the [`Solutions`] iterator which can find
 /// solutions for ypes implementing [`Problem`].
-/// 
+///
 /// Technically any problem solvable with backtracking would not need to keep any state, apart from
 /// the initial state, since all the essential input is part of the history. An empty implementation
 /// for [`Problem::what_if`] and [`Problem::undo`] would always be sufficient. Given the large
@@ -24,6 +24,7 @@ pub trait Problem {
         possibilities: &mut Vec<Self::Posibility>,
         history: &[Self::Posibility],
     );
+
     /// Undo the last decision made. If invoked by the [`Solutions`] iterator `last` is to be
     /// guaranteed, to be the last decision made with [`do`]
     fn undo(&mut self, last: &Self::Posibility, history: &[Self::Posibility]);
@@ -38,13 +39,13 @@ pub trait Problem {
 }
 
 /// An iterator performing backtracking to find solutions to a problem.
-pub struct Solutions<G: Problem> {
-    decisions: Vec<G::Posibility>,
-    open: Vec<Candidate<G::Posibility>>,
+pub struct Solutions<P: Problem> {
+    decisions: Vec<P::Posibility>,
+    open: Vec<Candidate<P::Posibility>>,
     /// Keeps track of the decisions, which yielded the current problem state, starting from the
     /// initial state.
-    history: Vec<G::Posibility>,
-    current: G,
+    history: Vec<P::Posibility>,
+    current: P,
 }
 
 impl<G: Problem> Solutions<G> {
@@ -55,7 +56,7 @@ impl<G: Problem> Solutions<G> {
             .iter()
             .map(|pos| Candidate {
                 count: 1,
-                mov: *pos,
+                possibility: *pos,
             })
             .collect();
         Self {
@@ -67,18 +68,15 @@ impl<G: Problem> Solutions<G> {
     }
 }
 
-struct Candidate<M> {
-    /// Counts the number of turns made to get to this candidate. We keep track of this so we can
-    /// call undo the appropriate number of types, if we roll back a solution.
-    count: i32,
-    mov: M,
-}
-
 impl<G: Problem> Iterator for Solutions<G> {
     type Item = G::Solution;
 
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(Candidate { count, mov }) = self.open.pop() {
+        while let Some(Candidate {
+            count,
+            possibility: mov,
+        }) = self.open.pop()
+        {
             // Unroll all the moves until our current state is identical with the one which we
             // had once we put that mov into the open list. We want to be one move behind so
             // we need to play the move in order to get the desired state
@@ -98,13 +96,22 @@ impl<G: Problem> Iterator for Solutions<G> {
 
             // Extend search tree
             self.decisions.clear();
-            self.current.extend_possibilities(&mut self.decisions, &self.history);
+            self.current
+                .extend_possibilities(&mut self.decisions, &self.history);
             self.open
                 .extend(self.decisions.iter().map(|&position| Candidate {
                     count: count + 1,
-                    mov: position,
+                    possibility: position,
                 }))
         }
         None
     }
+}
+
+struct Candidate<P> {
+    /// Counts the number of turns made to get to this candidate. We keep track of this so we can
+    /// call undo the appropriate number of types, if we roll back to an earlier state.
+    count: i32,
+    /// Possibility which will lead to this candidate
+    possibility: P,
 }

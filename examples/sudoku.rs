@@ -32,9 +32,7 @@ impl Sudoku {
         if bytes.iter().any(|&n| n > 9) {
             panic!("Only values from 0 to 9 are valid.")
         }
-        Self {
-            fields: bytes,
-        }
+        Self { fields: bytes }
     }
 
     pub fn print_to(&self, to: &mut impl Write) -> io::Result<()> {
