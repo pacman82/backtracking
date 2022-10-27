@@ -19,7 +19,7 @@ pub trait Problem {
 
     /// Extends `possibilities` with a set of decisions to be considered next. Implementations may
     /// assume that the `possibilities` is empty if invoked through the `Solutions` iterator.
-    fn next_decisions(
+    fn extend_possibilities(
         &self,
         possibilities: &mut Vec<Self::Posibility>,
         history: &[Self::Posibility],
@@ -50,7 +50,7 @@ pub struct Solutions<G: Problem> {
 impl<G: Problem> Solutions<G> {
     pub fn new(init: G) -> Self {
         let mut possible_moves = Vec::new();
-        init.next_decisions(&mut possible_moves, &[]);
+        init.extend_possibilities(&mut possible_moves, &[]);
         let open = possible_moves
             .iter()
             .map(|pos| Candidate {
@@ -98,7 +98,7 @@ impl<G: Problem> Iterator for Solutions<G> {
 
             // Extend search tree
             self.decisions.clear();
-            self.current.next_decisions(&mut self.decisions, &self.history);
+            self.current.extend_possibilities(&mut self.decisions, &self.history);
             self.open
                 .extend(self.decisions.iter().map(|&position| Candidate {
                     count: count + 1,

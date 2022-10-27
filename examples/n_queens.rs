@@ -40,7 +40,7 @@ impl Problem for NQueens {
     type Posibility = QueenAt;
     type Solution = NQueensSolution;
 
-    fn next_decisions(&self, possible_moves: &mut Vec<QueenAt>, history: &[QueenAt]) {
+    fn extend_possibilities(&self, possible_moves: &mut Vec<QueenAt>, history: &[QueenAt]) {
         if history.len() == self.n as usize {
             return;
         }
