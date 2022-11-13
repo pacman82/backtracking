@@ -86,22 +86,41 @@ impl Problem for Sudoku {
 
     // We look over all posibilities for the first free index
     fn extend_possibilities(&self, possible_moves: &mut Vec<WriteDigit>, _history: &[WriteDigit]) {
-        if let Some(index) = self.fields.iter().position(|value| *value == 0) {
-            let index = index as u8;
-            let mut all_possible_digits = self.possible_digits_at(index);
-            // Treat the first digit special, because we want to shirt circut in case we there is
-            // not even one digit.
-            if let Some(digit) = all_possible_digits.next() {
-                possible_moves.push(WriteDigit { index, digit });
+        // We only consider fields which do not have a digit written into them yet.
+        let free_fields = self.fields.iter().enumerate().filter_map(|(index, digit)| {
+            if *digit == 0 {
+                Some(index as u8)
             } else {
+                None
+            }
+        });
+        // We look for the field with the fewest possible digits, and return all its possibilities.
+        // Therfore we keep track of the current minimum.
+        let mut min = None;
+        for index in free_fields {
+            let min_count = min.map(|(_, count)| count).unwrap_or(9);
+            let new_count = self
+                .possible_digits_at(index)
+                // We are only interessted in the new count, if it is less than the current minimum,
+                // so we can short circut, in case we already have more elements found
+                .take(min_count)
+                .count();
+            if new_count == 0 {
                 // Not even one possible digit could be found for this field. This implies that this
                 // Sudoku is unsolvable and has no possible moves, since we verified that this field
-                // is free.
-                possible_moves.clear();
+                // is free. => We short circut, leaving possible_moves empty
                 return;
             }
-            // Add the remaining digits for this field to the possibilities
-            possible_moves.extend(all_possible_digits.map(|digit| WriteDigit { index, digit }));
+            if new_count < min_count {
+                // We found a new minimum, let's remember its index
+                min = Some((index, new_count))
+            }
+        }
+        if let Some((index, _count)) = min {
+            possible_moves.extend(
+                self.possible_digits_at(index)
+                    .map(|digit| WriteDigit { index, digit }),
+            );
         }
     }
 
